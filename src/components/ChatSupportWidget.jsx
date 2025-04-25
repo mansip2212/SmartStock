@@ -35,14 +35,6 @@ const ChatSupportWidget = () => {
       productId: doc.id,
       ...doc.data()
     }));
-  
-    const trimmed = inventoryData.map(item => ({
-      id: item.productId,
-      name: item.name,
-      category: item.category,
-      remainingQty: item.remainingQty,
-      price: item.price
-    }));
 
     setTrimmedInventory(inventoryData);
   };
