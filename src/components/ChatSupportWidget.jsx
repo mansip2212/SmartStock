@@ -1,5 +1,7 @@
-import React, { useState } from "react";
+import React, { useState , useEffect} from "react";
 import genAI from "../utils/geminiClient";
+import { getFirestore, collection, getDocs } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
 
 const ChatSupportWidget = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -9,8 +11,40 @@ const ChatSupportWidget = () => {
   const [newMessage, setNewMessage] = useState("");
   const [chatHistory, setChatHistory] = useState([]);
 
+  const [trimmedInventory, setTrimmedInventory] = useState([]);
+
+  
+  const contextJSON = JSON.stringify(trimmedInventory, null, 2);
   const handleToggleChat = () => {
     setIsOpen(!isOpen);
+  };
+
+  useEffect(() => {
+    fetchInventoryData();
+  }, []);
+
+  const fetchInventoryData = async () => {
+    const db = getFirestore();
+    const auth = getAuth();
+    const user = auth.currentUser;
+
+    const inventoryRef = collection(db, "users", user.uid, "inventory");
+    const snapshot = await getDocs(inventoryRef);
+  
+    const inventoryData = snapshot.docs.map(doc => ({
+      productId: doc.id,
+      ...doc.data()
+    }));
+  
+    const trimmed = inventoryData.map(item => ({
+      id: item.productId,
+      name: item.name,
+      category: item.category,
+      remainingQty: item.remainingQty,
+      price: item.price
+    }));
+
+    setTrimmedInventory(inventoryData);
   };
 
 
@@ -29,7 +63,7 @@ const ChatSupportWidget = () => {
             model: "gemini-2.0-flash",
             history: chatHistory,
             config: {
-                systemInstruction: "You are a helpful assistant for SmartStock, an inventory management system. Please provide accurate and concise answers to user queries. If the user wants to place an order, ask for any missing values from the following fields: productId, productName, category, quantity, and productPrice. Once all are provided, reply with 'Ready to place order'.",
+                systemInstruction: `You are a helpful assistant for SmartStock, an inventory management system. Please provide accurate and concise answers to user queries. If the user wants to place an order, ask for any missing values from the following fields: productId, productName, category, quantity, and productPrice. Use the data given to you: ${contextJSON}. Only answer based on this inventory.`,
             }
         });
 
