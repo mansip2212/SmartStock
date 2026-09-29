@@ -52,7 +52,7 @@ const ChatSupportWidget = () => {
     try {
 
         const chat = genAI.chats.create({
-            model: "gemini-2.0-flash",
+            model: "gemini-2.5-flash",
             history: chatHistory,
             config: {
                 systemInstruction: `You are a helpful assistant for SmartStock, an inventory management system. Please provide accurate and concise answers to user queries. If the user wants to place an order, ask for any missing values from the following fields: productId, productName, category, quantity, and productPrice. Use the data given to you: ${contextJSON}. Only answer based on this inventory.`,

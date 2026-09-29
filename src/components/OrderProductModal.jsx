@@ -59,6 +59,7 @@ const OrderProductModal = ({ isOpen, onClose, prePopulatedProduct }) => {
 
   const confirmSubmission = async () => {
     setConfirmOpen(false);
+    try {
     const finalCategory = category === "Other" ? newCategory : category;
     const inventoryRef = collection(db, "users", user.uid, "inventory");
     const productRef = doc(inventoryRef, productId);
@@ -103,6 +104,10 @@ const OrderProductModal = ({ isOpen, onClose, prePopulatedProduct }) => {
 
 
     onClose();
+    } catch (err) {
+      console.error("Failed to add product:", err);
+      setError(`Failed to add product: ${err.message}`);
+    }
   };
 
   return (
